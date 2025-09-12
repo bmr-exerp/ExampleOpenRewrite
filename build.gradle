@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id "maven-publish"
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    javaCompiler = javaToolchains.compilerFor({
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+    options.release = 8
+}
+
+dependencies {
+    // import Rewrite's bill of materials.
+    implementation(platform("org.openrewrite.recipe:rewrite-recipe-bom:latest.release"))
+
+    // rewrite-java dependencies only necessary for Java Recipe development
+    implementation("org.openrewrite:rewrite-java")
+
+    // You only need the version that corresponds to your current
+    // Java version. It is fine to add all of them, though, as
+    // they can coexist on a classpath.
+    runtimeOnly("org.openrewrite:rewrite-java-8")
+    runtimeOnly("org.openrewrite:rewrite-java-11")
+    runtimeOnly("org.openrewrite:rewrite-java-17")
+
+    // For authoring tests for any kind of Recipe
+    testImplementation("org.openrewrite:rewrite-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly('com.google.guava:guava:18.0')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.example.refactor'
+            artifactId = 'example-open-rewrite'
+            version = '0.1'
+
+            from components.java
+        }
+    }
+}
